@@ -37,11 +37,11 @@ jobs:
         run: |
           cp resources/torrc tor
           cp resources/start-tor.bat tor
-          zip -Xr tor-expert-bundle-windows-x86_64-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}.zip tor
+          zip -Xr tor-expert-bundle-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}-windows-x86_64.zip tor
 
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
           name: Tor Expert Bundle ${{ github.ref_name }} (${{ steps.tor_ver.outputs.tor_ver }})
           files: |
-            tor-expert-bundle-windows-x86_64-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}.zip
+            tor-expert-bundle-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}-windows-x86_64.zip
