@@ -1,4 +1,4 @@
-# Tor Expert Bundle
+# Tor
 
 ## Installation
 
