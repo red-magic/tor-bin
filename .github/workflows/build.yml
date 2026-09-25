@@ -1,0 +1,51 @@
+name: Build Tor Expert Bundle
+
+on:
+  push:
+    tags:
+      - '[0-9]+\.[0-9]+'
+      - '[0-9]+\.[0-9]+\.[0-9]+'
+
+jobs:
+  build-tor:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Download Tor Expert Bundle archives
+        run: |
+          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ github.ref_name }}/tor-expert-bundle-linux-x86_64-${{ github.ref_name }}.tar.gz
+          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ github.ref_name }}/tor-expert-bundle-windows-x86_64-${{ github.ref_name }}.tar.gz
+
+      - name: Unpack Tor Expert Bundle archives
+        run: |
+          mkdir tor-ver
+          mkdir tor
+          tar xzf tor-expert-bundle-linux-x86_64-${{ github.ref_name }}.tar.gz -C tor-ver
+          tar xzf tor-expert-bundle-windows-x86_64-${{ github.ref_name }}.tar.gz -C tor
+
+      - name: Extract Tor version
+        id: tor_ver
+        run: |
+          tor_ver=$(LD_LIBRARY_PATH=tor-ver/tor tor-ver/tor/tor --version 2> /dev/null | head -n1 | awk '{print $3}')
+          echo "tor_ver=$tor_ver" >> "$GITHUB_OUTPUT"
+
+      - name: Add custom files to Windows distribution
+        run: |
+          cp resources/torrc tor
+          cp resources/start-tor.bat tor
+
+      - name: Pack Windows distribution
+        run: |
+          zip -Xr tor-expert-bundle-windows-x86_64-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}.zip tor
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: Tor Expert Bundle ${{ github.ref_name }} (${{ steps.tor_ver.outputs.tor_ver }})
+          files: |
+            tor-expert-bundle-windows-x86_64-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}.zip
