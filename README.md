@@ -6,4 +6,4 @@ Download and extract the release archive, then launch Tor with the `start-tor` s
 
 > [!IMPORTANT]
 > - The default listening port is `127.0.0.1:9050`.
-> - Uncomment bridges in `torrc` to use them.
+> - Set `UseBridges` to `1` and uncomment bridges in `torrc` to use them.
