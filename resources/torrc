@@ -11,7 +11,7 @@
 #Bridge 82.207.215.172:9004 D6D9673102DF1435C1A66F4C98E68B56F19216F7
 
 ClientTransportPlugin snowflake,obfs4,webtunnel exec tor\pluggable_transports\lyrebird.exe
-UseBridges 1
+UseBridges 0
 
 DataDirectory cache
 GeoIPFile data\geoip
