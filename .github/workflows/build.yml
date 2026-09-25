@@ -23,8 +23,7 @@ jobs:
 
       - name: Extract Tor Expert Bundle archives
         run: |
-          mkdir tor-ver
-          mkdir tor
+          mkdir tor-ver tor
           tar xzf tor-expert-bundle-linux-x86_64-${{ github.ref_name }}.tar.gz -C tor-ver
           tar xzf tor-expert-bundle-windows-x86_64-${{ github.ref_name }}.tar.gz -C tor
 
