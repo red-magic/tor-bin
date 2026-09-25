@@ -1,10 +1,9 @@
-name: Build Tor Expert Bundle
+name: Build Tor archive
 
 on:
   push:
     tags:
-      - '[0-9]+\.[0-9]+'
-      - '[0-9]+\.[0-9]+\.[0-9]+'
+      - 'tor-[0-9]*-bundle-[0-9]*'
 
 jobs:
   build-tor:
@@ -16,32 +15,33 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
 
-      - name: Download Tor Expert Bundle archives
+      - name: Extract versions
+        id: vers
         run: |
-          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ github.ref_name }}/tor-expert-bundle-linux-x86_64-${{ github.ref_name }}.tar.gz
-          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ github.ref_name }}/tor-expert-bundle-windows-x86_64-${{ github.ref_name }}.tar.gz
-
-      - name: Extract Tor Expert Bundle archives
-        run: |
-          mkdir tor-ver tor
-          tar xzf tor-expert-bundle-linux-x86_64-${{ github.ref_name }}.tar.gz -C tor-ver
-          tar xzf tor-expert-bundle-windows-x86_64-${{ github.ref_name }}.tar.gz -C tor
-
-      - name: Extract Tor version
-        id: tor_ver
-        run: |
-          tor_ver=$(LD_LIBRARY_PATH=tor-ver/tor tor-ver/tor/tor --version | head -n1 | awk '{print $3}')
+          tor_ver=$(echo '${{ github.ref_name }}' | cut -d "-" -f 2)
+          bundle_ver=$(echo '${{ github.ref_name }}' | cut -d "-" -f 4)
           echo "tor_ver=$tor_ver" >> "$GITHUB_OUTPUT"
+          echo "bundle_ver=$bundle_ver" >> "$GITHUB_OUTPUT"
+
+      - name: Download and extract Tor Expert Bundle archive
+        run: |
+          mkdir tor-tmp
+          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ steps.vers.outputs.bundle_ver }}/tor-expert-bundle-windows-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz
+          tar xzf tor-expert-bundle-windows-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz -C tor-tmp
 
       - name: Create Windows distribution
         run: |
+          mkdir -p tor/data
+          cp tor-tmp/tor/tor.exe tor
+          cp tor-tmp/tor/pluggable_transports/lyrebird.exe tor
+          cp -r tor-tmp/data/geoip* tor/data
           cp resources/torrc tor
           cp resources/start-tor.bat tor
-          zip -Xr tor-expert-bundle-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}-windows-x86_64.zip tor
+          zip -Xr tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip tor
 
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          name: Tor Expert Bundle ${{ github.ref_name }} (${{ steps.tor_ver.outputs.tor_ver }})
+          name: Tor ${{ steps.vers.outputs.tor_ver }}
           files: |
-            tor-expert-bundle-${{ github.ref_name }}-${{ steps.tor_ver.outputs.tor_ver }}-windows-x86_64.zip
+            tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip

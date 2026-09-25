@@ -2,4 +2,4 @@
 
 cd /d "%~dp0"
 
-tor\tor.exe -f torrc
+tor.exe -f torrc
