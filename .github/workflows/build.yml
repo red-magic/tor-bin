@@ -34,7 +34,7 @@ jobs:
           mkdir -p tor/data
           cp tor-tmp/tor/tor.exe tor
           cp tor-tmp/tor/pluggable_transports/lyrebird.exe tor
-          cp -r tor-tmp/data/geoip* tor/data
+          cp tor-tmp/data/geoip* tor/data
           cp resources/torrc tor
           cp resources/start-tor.bat tor
           zip -Xr tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip tor
