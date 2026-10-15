@@ -1,0 +1,15 @@
+--- a/torrc
++++ b/torrc
+@@ -10,9 +10,9 @@
+ #Bridge 146.19.254.163:53 E9D665DF29CFC13BBFD7E0D8ADB66D3C78B24FB4
+ #Bridge 82.207.215.172:9004 D6D9673102DF1435C1A66F4C98E68B56F19216F7
+
+-ClientTransportPlugin snowflake,obfs4,webtunnel exec ./lyrebird
++ClientTransportPlugin snowflake,obfs4,webtunnel exec lyrebird.exe
+ UseBridges 0
+
+ DataDirectory cache
+-GeoIPFile data/geoip
+-GeoIPv6File data/geoip6
++GeoIPFile data\geoip
++GeoIPv6File data\geoip6

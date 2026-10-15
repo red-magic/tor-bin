@@ -1,4 +1,4 @@
-name: Build Tor archive
+name: Build Tor archives
 
 on:
   push:
@@ -23,25 +23,42 @@ jobs:
           echo "tor_ver=$tor_ver" >> "$GITHUB_OUTPUT"
           echo "bundle_ver=$bundle_ver" >> "$GITHUB_OUTPUT"
 
-      - name: Download and extract Tor Expert Bundle archive
+      - name: Download and extract Tor Expert Bundle archives
         run: |
-          mkdir tor-tmp
+          mkdir tor-linux-tmp tor-windows-tmp
+          curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ steps.vers.outputs.bundle_ver }}/tor-expert-bundle-linux-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz
           curl -fLO https://archive.torproject.org/tor-package-archive/torbrowser/${{ steps.vers.outputs.bundle_ver }}/tor-expert-bundle-windows-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz
-          tar xzf tor-expert-bundle-windows-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz -C tor-tmp
+          tar xzf tor-expert-bundle-linux-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz -C tor-linux-tmp
+          tar xzf tor-expert-bundle-windows-x86_64-${{ steps.vers.outputs.bundle_ver }}.tar.gz -C tor-windows-tmp
+
+      - name: Create Linux distribution
+        run: |
+          mkdir -p linux/tor/data linux/tor/lib
+          cp tor-linux-tmp/tor/tor linux/tor
+          cp tor-linux-tmp/tor/pluggable_transports/lyrebird linux/tor
+          cp tor-linux-tmp/data/geoip* linux/tor/data
+          cp tor-linux-tmp/tor/*.so.* linux/tor/lib
+          cp resources/portable/linux/torrc linux/tor
+          cp resources/portable/linux/start-tor linux/tor
+          cd linux
+          tar czf ../tor-${{ steps.vers.outputs.tor_ver }}-linux-x86_64.tar.gz tor --owner=0 --group=0 --numeric-owner
 
       - name: Create Windows distribution
         run: |
-          mkdir -p tor/data
-          cp tor-tmp/tor/tor.exe tor
-          cp tor-tmp/tor/pluggable_transports/lyrebird.exe tor
-          cp tor-tmp/data/geoip* tor/data
-          cp resources/torrc tor
-          cp resources/start-tor.bat tor
-          zip -Xr tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip tor
+          mkdir -p windows/tor/data
+          cp tor-windows-tmp/tor/tor.exe windows/tor
+          cp tor-windows-tmp/tor/pluggable_transports/lyrebird.exe windows/tor
+          cp tor-windows-tmp/data/geoip* windows/tor/data
+          cp resources/portable/linux/torrc windows/tor
+          patch windows/tor/torrc < resources/portable/windows/torrc.patch
+          cp resources/portable/windows/start-tor.bat windows/tor
+          cd windows
+          zip -Xr ../tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip tor
 
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
           name: Tor ${{ steps.vers.outputs.tor_ver }}
           files: |
+            tor-${{ steps.vers.outputs.tor_ver }}-linux-x86_64.tar.gz
             tor-${{ steps.vers.outputs.tor_ver }}-windows-x86_64.zip

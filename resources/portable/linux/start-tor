@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "$(dirname "${0}")" || exit 1
+
+LD_LIBRARY_PATH=lib exec ./tor -f torrc
