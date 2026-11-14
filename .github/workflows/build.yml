@@ -38,7 +38,8 @@ jobs:
           cp tor-linux-tmp/tor/pluggable_transports/lyrebird linux/tor
           cp tor-linux-tmp/data/geoip* linux/tor/data
           cp tor-linux-tmp/tor/*.so.* linux/tor/lib
-          cp resources/portable/linux/torrc linux/tor
+          cp resources/torrc linux/tor
+          patch linux/tor/torrc < resources/portable/linux/torrc.patch
           cp resources/portable/linux/start-tor linux/tor
           cd linux
           tar czf ../tor-${{ steps.vers.outputs.tor_ver }}-linux-x86_64.tar.gz tor --owner=0 --group=0 --numeric-owner
@@ -49,7 +50,7 @@ jobs:
           cp tor-windows-tmp/tor/tor.exe windows/tor
           cp tor-windows-tmp/tor/pluggable_transports/lyrebird.exe windows/tor
           cp tor-windows-tmp/data/geoip* windows/tor/data
-          cp resources/portable/linux/torrc windows/tor
+          cp resources/torrc windows/tor
           patch windows/tor/torrc < resources/portable/windows/torrc.patch
           cp resources/portable/windows/start-tor.bat windows/tor
           cd windows
